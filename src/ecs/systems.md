@@ -1,6 +1,5 @@
 # Systems, Queries and Query Filters
 
-S
 
 ## What Makes a System
 
