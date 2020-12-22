@@ -356,6 +356,16 @@ fn say_hello(query: Query&lt;(&amp;Name, &amp;World), With&lt;Denizen&gt;&gt;, m
 <h2><a class="header" href="#concurrency-and-parallelism" id="concurrency-and-parallelism">Concurrency and Parallelism</a></h2>
 <h2><a class="header" href="#no-but-really-how-does-it-work" id="no-but-really-how-does-it-work">No But Really, How Does it Work?</a></h2>
 <h1><a class="header" href="#tools-for-intersystem-communication" id="tools-for-intersystem-communication">Tools for Intersystem Communication</a></h1>
+<p>Almost none of your systems will work in isolation. Instead, you'll want to pass data back and forth between them as your game progresses, altering the game state and advancing .</p>
+<p>Bevy offers a wide array of tools you could use to do this. Here's a full list (in order of ascending complexity) and a one-sentence description of each of them, most of which are explored later in this section:</p>
+<ol>
+<li>Modify the same <a href="ecs/communication/../components.html">components</a>: this is your bread-and-butter for data that lives with a specific entity.</li>
+<li>Modify the same <a href="ecs/communication/resources.html">resource</a>: this is the standard pattern for changing or reading persistent data that isn't attached to a specific entity.</li>
+<li>Call a second system from the first as a function like any other in Rust: can be handy if you want to repeat functionality.</li>
+<li>Send <a href="ecs/communication/events.html">events</a> from one system to another: great for open-ended message passing.</li>
+<li><a href="ecs/communication/chaining.html">Chain</a> one system directly into another while passing some data: handy for tightly coupled systems.</li>
+</ol>
+<p>While you <em>can</em> probably coerce most of these approaches to perform another's role, your code will be harder to read, harder to maintain, and very possibly less performant. Skim each of the sections linked to get a brief overview, then come back to them in detail when you need to implement that approach.</p>
 <h1><a class="header" href="#control-flow-and-timing" id="control-flow-and-timing">Control Flow and Timing</a></h1>
 <h1><a class="header" href="#system-scheduling-and-stages" id="system-scheduling-and-stages">System Scheduling and Stages</a></h1>
 <h1><a class="header" href="#stages" id="stages">Stages</a></h1>
