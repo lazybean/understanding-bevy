@@ -17,6 +17,14 @@ jobs:
       - name: Install Dependencies
         run: sudo apt-get update && sudo apt-get install --no-install-recommends pkg-config libx11-dev libasound2-dev libudev-dev
 
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Check code examples
+        run: cargo check --examples
+
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v1
         with:
