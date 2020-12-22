@@ -1,6 +1,6 @@
 # Introduction
 
-[Bevy](https://bevyengine.org/) is a fantastic free, open source, ECS-style game engine written in Rust. This book is [my](https://github.com/alice-i-cecile) attempt to collect, summarize and contextualize the engine and its ecosystem. This book was written for Bevy 0.4, and assumes familiarity with core Rust concepts (like lifetimes, traits, objects and iterators), but no previous experience with either Bevy or game programming as a whole. If you have any suggestions, questions or spot an error, please feel free to open an issue on this site's [Github](https://github.com/alice-i-cecile/understanding-bevy.github.io).
+[Bevy](https://bevyengine.org/) is a fantastic, free, open source, ECS-style game engine written in Rust. This book is [my](https://github.com/alice-i-cecile) attempt to collect, summarize and contextualize the engine and its ecosystem. This book was written for Bevy 0.4, and assumes familiarity with core Rust concepts (like lifetimes, traits, objects and iterators), but no previous experience with either Bevy or game programming as a whole. If you have any suggestions, questions, or spot an error, please feel free to open an issue on this site's [Github](https://github.com/alice-i-cecile/understanding-bevy.github.io).
 
 <h2> Why You Should Use Bevy </h2>
 
@@ -8,11 +8,11 @@
 
 - fully configurable: strip out the bits you don't need, replace them, or hack the core code yourself
 
-- written in Rust, offering fantastic speed, modern ergonomics and more safety
+- written in Rust, offering fantastic speed, modern ergonomics and superior memory safety
   
-- actively developed, carefully curated, with a commitment to code quality
+- actively developed and carefully curated, with a commitment to code quality
 
-- helpful, friendly and expert community
+- helpful, friendly, and expert community
 
 <h2> Why You Shouldn't Use Bevy </h2>
 
@@ -23,6 +23,8 @@
 - unstable API, likely to break repeatedly
 
 - poorly documented (hence this book!)
+
+<h2> Resources </h2>
 
 As you read along, there are a few key resources you should be aware of:
 
