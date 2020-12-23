@@ -24,44 +24,10 @@ Despite the fact that `.init_resource` and `.add_resource` are `AppBuilder` meth
 
 Here's how you might add resources of various types for a mock RTS game:
 ```rust
-use bevy::prelude::*;
-
-	struct InfantryStats{
-		hp: f32,
-		damage: f32,
-		speed: f32,
-	}
-
-	struct PlayerResources{
-		gold: usize,
-		wood: usize,
-	}
-
-	struct InitialPosition(f32, f32)
-
-	enum PlayerColor{
-		Red,
-		Blue,
-		Pink
-	}
-
-	fn main() {
-		App::build()
-		.add_resource::<InfantryStats>()
-		.init_resource(PlayerResources{gold: 1000, wood: 500})
-		.init_resource(InitialPosition(0,0))
-		.init_resource(PlayerColor::Pink)
-		.run();
-	}
+{{#include _resources_code/examples/adding_resources.rs}}
 ```
 
-If you're frequently using `init_resource()` for a specific type (such as in `Local` resources), you should consider setting up `impl Default` or a `new` method for that type.
-
-If you need to use a not thread safe resource, here's an example of how you might set and access it:
-
-```rust
-
-```
+If you're frequently using `init_resource()` for a specific type (as you might for system-local resources), you should consider setting up `impl Default` or a `new` method for that type.
 
 ### Thread-local Resources
 
@@ -71,9 +37,9 @@ Be aware: thread-local resources created in this way are a completely distinct c
 
 Once you have your thread-local resource, you need to use "thread-local systems" (see the corresponding [section](../systems.md) in this book for more information) to manipulate it, which gives you a complete global lock on the entire [app](https://docs.rs/bevy/0.4.0/bevy/app/struct.App.html), with `World` and all of its `Resources`.
 
-Here's an example in action:
+Here's how you might set and access such a resource:
 ```rust
-
+{{#include _resources_code/examples/thread_local_resources.rs}}
 ```
 
 ### System-Local Resources
@@ -85,7 +51,7 @@ In typical use, system-local resources are created implicitly, through the use o
 
 Here's an example showing you how and why you might want to use system-local resources:
 ```rust
-
+{{#include _resources_code/examples/system_local_resources.rs}}
 ```
 
 ## Ensuring Unique Resource Types
@@ -95,53 +61,10 @@ When any of the resource creation methods is called on a type that already exist
 Here are a few patterns you can use to ensure that your resources have a unique type:
 
 ```rust
-	// In this example, we need many different Resources that use an f32 to store its data
-
-	// Creating a type alias for f32
-	let Score = f32;
-
-	// Creating a simple tuple struct
-	// You can do the exact same thing with an ordinary struct if you want the field name
-	struct FallingThreshold(f32);
-	
-	// Adding the Deref trait makes these simple structures much more pleasant to work with
-	// You always want the inner data anyways
-	impl Deref for FallingThreshold{
-		type Target = Timer;
-
-		fn deref(&self) -> &Self::Target {
-			&self.0
-		}
-	}
-
-	impl DerefMut for FallingThreshold{
-		fn deref_mut(&mut self) -> &mut Timer {
-			&mut self.0
-		}
-	}
-
-	// Creating a marker struct to combine with our data as a tuple type
-	// You could easily reuse these as marker components as well
-	struct Friendly;
-	struct Hostile
-
-	fn main() {
-		App::build()
-		// Don't do this: it's really hard to debug and read
-		// And also hard to extend with new behavior or traits
-		.add_resource::<f32>()
-		// This overwrites our previous f32, since type aliasing doesn't create a new type
-		.add_resource::<Score>()
-		// FallingThreshold is its own type, despite being used like a raw f32
-		.add_resource::<FallingThreshold>()
-		// (Friendly, f32) and (Hostile, f32) are unique types, disambiguating properly
-		.add_resource::<(Friendly, f32)>()
-		.add_resource::<(Hostile, f32)>()
-		.run();
-	}
+{{#include _resources_code/examples/unique_resource_types.rs}}
 ```
 
-## Using Resources
+## Using Resources in Your Systems
 
 In order to access resources in a system, wrap the resource type in your function parameters in one of the three smart-pointers.
 
@@ -158,5 +81,5 @@ When you define a system, you can include resources as one of your function para
 We can see the differences between these different resource types in this simple example:
 
 ```rust
-
+{{#include _resources_code/examples/resource_smart_pointers.rs}}
 ```
