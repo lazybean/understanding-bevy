@@ -9,18 +9,15 @@ You can use virtually any Rust type as a resource, but if possible, you're going
 
 Assuming that we're working with a thread-safe resource that isn't system local, there are two different ways we can add resources to our app.
 
+When you're working with your [`AppBuilder`](../internals/app-builder.md) (including through a [plugin](../../organization/plugins.md)), there are two ways to add resources:
+
 1. [`init_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_resource), which registers the resource type specified in its type parameter.
 
 2. [`.add_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource), which also sets a starting value for that type.
 
 Use `.init_resource` when you're not sure what data you need in the resource at the time of its creation, and use `.add_resource` when you have a good starting value.
 
-You can use these methods:
-    1. Directly on the [AppBuilder](../internals/app-builder.md).
-    2. Through [commands](commands.md), which don't take effect until the end of the current stage. This allows you to add or overwrite Resources at runtime, although in most cases you shouldn't need to. If you just need to modify a resource, instead create a system that gets a `ResMut` to the resource in question, then modify it there.
-    3. As part of a [plugin](../../organization/plugins.md), to keep your code well-organized, which you then add to the app builder. These are constructed using commands as well, so they also have delayed effect.
-
-Despite the fact that `.init_resource` and `.add_resource` are `AppBuilder` methods, not `Commands` methods, we can still use them on our `commands` object that's accessed by our plugins and systems. Commands accumulates changes, then applies them to the `AppBuilder` at the end of the current stage.
+If you need to add or overwrite Resources at run-time, consider using [commands](commands.md) with the [.insert_resource](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_resource) method, which works the same as `.add_resource` above. Be mindful though: commands don't take effect until the end of each stage. Most of the time, you shouldn't need to do this: to modify a resource, instead create a system that gets a `ResMut` to the resource in question, then modify it within that system.
 
 Here's how you might add resources of various types for a mock RTS game:
 ```rust
