@@ -2,7 +2,7 @@
 
 Bevy supported version:
 ```
-{{#include _index_code/Cargo.toml:10}}
+{{#include ecs_index_code/Cargo.toml:10}}
 ```
 
 At its heart, Bevy operates using an [Entity-Component-System](https://en.wikipedia.org/wiki/Entity_component_system) model. Rather than operating in a traditional object-oriented fashion, where your game is composed of individual objects with properties and methods, ECS games work in a fashion that is much closer to a relational database: grouping similar data together in a memory-dense fashion, with the `Entity` serving as a primary key to identify the data, then processing the game data in a batch-wise fashion.
@@ -21,19 +21,19 @@ To get started, [Install Rust](https://www.rust-lang.org/tools/install), then se
 The boilerplate needed to make your own app is simple:
 
 ```rust
-{{#include _index_code/examples/boilerplate.rs}}
+{{#include ecs_index_code/examples/boilerplate.rs}}
 ```
 
 If you're looking for some useful functionality out of the box (windowing, graphics, input, a scheduler that automatically loops etc.), you'll want to add [`DefaultPlugins`](https://docs.rs/bevy/0.4.0/bevy/struct.DefaultPlugins.html) as well.
 
 ```rust
-{{#include _index_code/examples/default_plugins.rs}}
+{{#include ecs_index_code/examples/default_plugins.rs}}
 ```
 
 If all you need is a simple scheduler, you can use the minimal [`MinimalPlugins`](https://docs.rs/bevy/0.4.0/bevy/struct.MinimalPlugins.html) instead. This is a nice pattern for writing tests or examples, but could also be useful for running in headless mode or if you wanted to use Bevy's scheduler and ECS as part of a program that doesn't a GUI frontend.
 
 ```rust
-{{#include _index_code/examples/minimal_plugins.rs}}
+{{#include ecs_index_code/examples/minimal_plugins.rs}}
 ```
 
 By chaining methods together on the [`AppBuilder`](internals/app-builder.md) that we created with `App::build`, we can carefully build up our game's functionality in a modular fashion with the [Builder pattern](https://refactoring.guru/design-patterns/builder).
@@ -41,7 +41,7 @@ By chaining methods together on the [`AppBuilder`](internals/app-builder.md) tha
 To give you a taste of the syntax for Bevy's ECS, here's a not-quite-minimal Hello World example: 
 
 ```rust
-{{#include _index_code/examples/hello_world.rs}}
+{{#include ecs_index_code/examples/hello_world.rs}}
 ```
 
 If you want to dive right into more realistic code-bases, check out the extensive [examples](https://github.com/bevyengine/bevy/tree/master/examples) section of the official repo, or the examples and tutorials found at [awesome-bevy](https://github.com/bevyengine/awesome-bevy#games).

@@ -21,7 +21,7 @@ If you need to add or overwrite Resources at run-time, consider using [commands]
 
 Here's how you might add resources of various types for a mock RTS game:
 ```rust
-{{#include _resources_code/examples/adding_resources.rs}}
+{{#include resources_code/examples/adding_resources.rs}}
 ```
 
 ### Thread-local Resources
@@ -34,7 +34,7 @@ Once you have your thread-local resource, you need to use "thread-local systems"
 
 Here's how you might set and access such a resource:
 ```rust
-{{#include _resources_code/examples/thread_local_resources.rs}}
+{{#include resources_code/examples/thread_local_resources.rs}}
 ```
 
 ### System-Local Resources
@@ -46,7 +46,7 @@ In typical use, system-local resources are created implicitly, through the use o
 
 Here's an example showing the power of system-local resources when combined with generic systems:
 ```rust
-{{#include _resources_code/examples/system_local_resources.rs}}
+{{#include resources_code/examples/system_local_resources.rs}}
 ```
 
 ## Ensuring Unique Resource Types
@@ -56,7 +56,7 @@ When any of the resource creation methods is called on a type that already exist
 Here are a few patterns you can use to ensure that your resources have a unique type:
 
 ```rust
-{{#include _resources_code/examples/unique_resource_types.rs}}
+{{#include resources_code/examples/unique_resource_types.rs}}
 ```
 
 ## Using Resources in Your Systems
@@ -76,5 +76,5 @@ When you define a system, you can include resources as one of your function para
 We can see the differences between these different resource types in this simple example:
 
 ```rust
-{{#include _resources_code/examples/resource_smart_pointers.rs}}
+{{#include resources_code/examples/resource_smart_pointers.rs}}
 ```
