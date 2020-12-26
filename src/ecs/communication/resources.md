@@ -43,8 +43,7 @@ System-local resources are scoped, mutable resources that are only available in 
 
 In typical use, system-local resources are created implicitly, through the use of a `Local` resource smart-pointer type on one of the function arguments in your system. If you had some reason to manually create or overwrite them, you could instead use [`.insert_local_resource`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_local_resource).
 
-
-Here's an example showing the power of system-local resources when combined with generic systems:
+Local resources are a fairly niche tool: use them if you want to track state that will only ever be relevant to a single system that you need to persist across frames. The [official example](https://github.com/bevyengine/bevy/blob/master/examples/ecs/event.rs) for [Events](events.md) show how you can use them to create an`EventReader`, which could persist across frames if not all events were processed in the available time. When you want to have many similar, but distinct systems, you can use system-local resources in combination with generics to get interesting specialization, as shown in this overly-complex `Timer` example:
 ```rust
 {{#include resources_code/examples/system_local_resources.rs}}
 ```
