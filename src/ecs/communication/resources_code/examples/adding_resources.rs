@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use bevy::prelude::*;
 
 struct InfantryStats {
