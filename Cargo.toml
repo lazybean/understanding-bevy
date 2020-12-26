@@ -1,5 +1,5 @@
 [workspace]
 members = [
-  "src/ecs/_index_code",
-  "src/ecs/communication/_resources_code"
+  "src/ecs/ecs_index_code",
+  "src/ecs/communication/resources_code"
 ]
