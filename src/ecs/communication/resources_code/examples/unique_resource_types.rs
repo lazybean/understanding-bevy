@@ -5,7 +5,7 @@ use std::ops::{Deref, DerefMut};
 // Creating a type alias for f32
 type Score = f32;
 
-// Creating a simple tuple struct
+// Creating a simple tuple struct using the 'newtype' pattern
 // You can do the exact same thing with an ordinary struct if you want the field name
 struct FallingThreshold(f32);
 
