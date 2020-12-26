@@ -11,9 +11,9 @@ Assuming that we're working with a thread-safe resource that isn't system local,
 
 When you're working with your [`AppBuilder`](../internals/app-builder.md) (including through a [plugin](../../organization/plugins.md)), there are two ways to add resources:
 
-1. [`init_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_resource), which registers the resource type specified in its type parameter.
+1. [`init_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_resource), which adds a resource of the type specified in its type parameter, with a starting value given by its `Default` trait.
 
-2. [`.add_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource), which also sets a starting value for that type.
+2. [`.add_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource), which sets a custom starting value for that type.
 
 Use `.init_resource` when you're not sure what data you need in the resource at the time of its creation, and use `.add_resource` when you have a good starting value.
 
@@ -23,8 +23,6 @@ Here's how you might add resources of various types for a mock RTS game:
 ```rust
 {{#include _resources_code/examples/adding_resources.rs}}
 ```
-
-If you're frequently using `init_resource()` for a specific type (as you might for system-local resources), you should consider setting up `impl Default` or a `new` method for that type.
 
 ### Thread-local Resources
 
