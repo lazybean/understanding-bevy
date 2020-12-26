@@ -6,12 +6,24 @@ struct InfantryStats {
     speed: f32,
 }
 
+// In order to use .init_resource, we need to specify a default starting value
+// by implementing the Default trait
+impl Default for InfantryStats {
+    fn default() -> Self {
+        InfantryStats {
+            hp: 10.0,
+            damage: 2.0,
+            speed: 1.0,
+        }
+    }
+}
+
 struct PlayerResources {
     gold: usize,
     wood: usize,
 }
 
-struct InitialPosition(f32, f32);
+struct InitialPosition(i32, i32);
 
 enum PlayerColor {
     Red,
@@ -21,12 +33,12 @@ enum PlayerColor {
 
 fn main() {
     App::build()
-        .add_resource::<InfantryStats>()
-        .init_resource(PlayerResources {
+        .init_resource::<InfantryStats>()
+        .add_resource(PlayerResources {
             gold: 1000,
             wood: 500,
         })
-        .init_resource(InitialPosition(0, 0))
-        .init_resource(PlayerColor::Pink)
+        .add_resource(InitialPosition(0, 0))
+        .add_resource(PlayerColor::Pink)
         .run();
 }
