@@ -30,6 +30,12 @@ If you're looking for some useful functionality out of the box (windowing, graph
 {{#include _index_code/examples/default_plugins.rs}}
 ```
 
+If all you need is a simple scheduler, you can use the minimal [`MinimalPlugins`](https://docs.rs/bevy/0.4.0/bevy/struct.MinimalPlugins.html) instead. This is a nice pattern for writing tests or examples, but could also be useful for running in headless mode or if you wanted to use Bevy's scheduler and ECS as part of a program that doesn't a GUI frontend.
+
+```rust
+{{#include _index_code/examples/minimal_plugins.rs}}
+```
+
 By chaining methods together on the [`AppBuilder`](internals/app-builder.md) that we created with `App::build`, we can carefully build up our game's functionality in a modular fashion with the [Builder pattern](https://refactoring.guru/design-patterns/builder).
 
 To give you a taste of the syntax for Bevy's ECS, here's a not-quite-minimal Hello World example: 
