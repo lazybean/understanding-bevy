@@ -225,7 +225,7 @@
 <p>Now, let me show you the <code>World</code> of Bevy.</p>
 <h1><a class="header" href="#entities-components-and-systems" id="entities-components-and-systems">Entities, Components and Systems</a></h1>
 <p>Bevy supported version:</p>
-<pre><code>bevy = &quot;0.4&quot;
+<pre><code>{{#include _index_code/Cargo.toml:10}}
 </code></pre>
 <p>At its heart, Bevy operates using an <a href="https://en.wikipedia.org/wiki/Entity_component_system">Entity-Component-System</a> model. Rather than operating in a traditional object-oriented fashion, where your game is composed of individual objects with properties and methods, ECS games work in a fashion that is much closer to a relational database: grouping similar data together in a memory-dense fashion, with the <code>Entity</code> serving as a primary key to identify the data, then processing the game data in a batch-wise fashion.</p>
 <p>Games in Bevy are largely composed of five core building blocks, that come up again and again:</p>
@@ -239,113 +239,34 @@
 <h2><a class="header" href="#getting-started" id="getting-started">Getting Started</a></h2>
 <p>To get started, <a href="https://www.rust-lang.org/tools/install">Install Rust</a>, then set up a new Bevy project (&quot;Add Bevy as a Dependency&quot;) as described in the <a href="https://bevyengine.org/learn/book/getting-started/">official book</a>.</p>
 <p>The boilerplate needed to make your own app is simple:</p>
-<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
-
-fn main() {
-    App::build().run();
-}
-</code></pre></pre>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include _index_code/examples/boilerplate.rs}}
+<span class="boring">}
+</span></code></pre></pre>
 <p>If you're looking for some useful functionality out of the box (windowing, graphics, input, a scheduler that automatically loops etc.), you'll want to add <a href="https://docs.rs/bevy/0.4.0/bevy/struct.DefaultPlugins.html"><code>DefaultPlugins</code></a> as well.</p>
-<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
-
-fn main() {
-	App::build()
-        .add_plugins(DefaultPlugins)
-		.run();
-}
-</code></pre></pre>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include _index_code/examples/default_plugins.rs}}
+<span class="boring">}
+</span></code></pre></pre>
+<p>If all you need is a simple scheduler, you can use the minimal <a href="https://docs.rs/bevy/0.4.0/bevy/struct.MinimalPlugins.html"><code>MinimalPlugins</code></a> instead. This is a nice pattern for writing tests or examples, but could also be useful for running in headless mode or if you wanted to use Bevy's scheduler and ECS as part of a program that doesn't a GUI frontend.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include _index_code/examples/minimal_plugins.rs}}
+<span class="boring">}
+</span></code></pre></pre>
 <p>By chaining methods together on the <a href="ecs/internals/app-builder.html"><code>AppBuilder</code></a> that we created with <code>App::build</code>, we can carefully build up our game's functionality in a modular fashion with the <a href="https://refactoring.guru/design-patterns/builder">Builder pattern</a>.</p>
 <p>To give you a taste of the syntax for Bevy's ECS, here's a not-quite-minimal Hello World example: </p>
-<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
-use std::collections::HashMap;
-use std::fmt;
-
-// Denizen is a &quot;marker component&quot; here, to allow us to filter for denizens in our queries
-// In general, marker components do not store data, and are just used for queries
-// Marker components are talked about in more detail in section 2.2: Components
-#[derive(Debug)]
-struct Denizen;
-
-// We use the owned form String, rather than &amp;str in this struct 
-// Because resources and components must be thread-safe with a 'static lifetime
-#[derive(Hash, PartialEq, Eq, Clone, Debug)]
-struct Name(String);
-
-// A custom impl of Display to ensure we can print these names nicely
-impl fmt::Display for Name{
-	fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
-        write!(f, &quot;{}&quot;, self.0)
-    }
-}
-
-#[derive(Clone, Debug)]
-enum World{
-	Venus,
-	Earth,
-	Mars
-}
-
-// Creating a unique timer type for each system that needs one allows us to be sure we're grabbing the right one
-struct HelloTimer(Timer);
-
-fn main() {
-	App::build()
-	// We add the default plugins so our game will loop
-	// This also adds the Time resource that we use in `say_hello`
-	.add_plugins(DefaultPlugins)
-	// We're creating a HashMap to record which planet entities a name are on
-	.add_resource(HashMap::&lt;Name, World&gt;::new())
-	// Startup systems only run once, before normal systems take place
-	.add_startup_system(place_denizens.system())
-	// When systems cannot be run in parallel, priority is based on insertion order
-	.add_startup_system(spawn_denizens.system())
-	// The `say_hello` system will be run every frame, but only prints when the timer is complete
-	// (See `say_hello` logic)
-	.add_resource(HelloTimer(Timer::from_seconds(2.0, true)))
-	.add_system(say_hello.system())
-	.run();
-}
-
-// Because we're modifying the `directory` argument, we need to get the mutable version of it with `ResMut`
-// Bevy's ECS finds a Resource with the matching type; we want to be sure we have exactly one resource of each type that we need
-fn place_denizens(mut directory: ResMut&lt;HashMap::&lt;Name, World&gt;&gt;){
-	// .into() converts our string literal from &amp;str to the required String
-	directory.insert(Name(&quot;Alice&quot;.into()), World::Venus);
-	directory.insert(Name(&quot;Bevy&quot;.into()), World::Earth);
-	directory.insert(Name(&quot;Cart&quot;.into()), World::Mars);
-}
-
-// The special `Commands` resource queues up actions that should be performed to modify the World
-// We only need to read from the directory resource, so we can call it with `Res` instead of `ResMut`
-fn spawn_denizens(commands: &amp;mut Commands, directory: Res&lt;HashMap::&lt;Name, World&gt;&gt;){
-	// We need to use .clone and .into_iter rather than .iter here 
-	// to satisfy the lifetime requirements of .spawn()
-	for (name, world) in directory.clone().into_iter(){
-		if name == Name(&quot;Bevy&quot;.into()){
-			// .spawn creates new entities with the specified components
-			// each tuple entry is a different component
-			commands.spawn((name, world));
-		} else {
-			// Only Alice and Cart are Denizens, so Bevy will be excluded from our query filter in `say_hello`
-			commands.spawn((name, world, Denizen));
-		}
-	}
-}
-
-// Queries extract each entity that have all of the components specified in their first type argument
-// They only return the components specified in the query, not any other components that may be associated with the entities
-// The second type argument is a query filter, which restricts which entities are actually provided 
-fn say_hello(query: Query&lt;(&amp;Name, &amp;World), With&lt;Denizen&gt;&gt;, mut timer: ResMut&lt;HelloTimer&gt;, time: Res&lt;Time&gt;){
-	// Only run this system when the timer has elapsed
-	if timer.0.tick(time.delta_seconds()).just_finished(){
-		// Iterating over and then unpacking the query gives us access to the components for each of its entities
-		for (name, world) in query.iter(){
-			// Because we're querying for &amp;Query and &amp;World, we need to dereference them before we work with them
-			println!(&quot;Hello {:?}, my name is {}!&quot;, *world, *name);
-		}
-	}
-}
-</code></pre></pre>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include _index_code/examples/hello_world.rs}}
+<span class="boring">}
+</span></code></pre></pre>
 <p>If you want to dive right into more realistic code-bases, check out the extensive <a href="https://github.com/bevyengine/bevy/tree/master/examples">examples</a> section of the official repo, or the examples and tutorials found at <a href="https://github.com/bevyengine/awesome-bevy#games">awesome-bevy</a>.</p>
 <h1><a class="header" href="#entities" id="entities">Entities</a></h1>
 <p>Each conceptual &quot;entity&quot; that we add to our</p>
@@ -381,69 +302,34 @@ You might want to use resources for storing and configuring settings, handling a
 <p>You can use virtually any Rust type as a resource, but if possible, you're going to want your resources to be thread-safe: <code>'static</code> lifetime and <code>Send + Sync</code>.</p>
 <h2><a class="header" href="#creating-resources" id="creating-resources">Creating Resources</a></h2>
 <p>Assuming that we're working with a thread-safe resource that isn't system local, there are two different ways we can add resources to our app.</p>
+<p>When you're working with your <a href="ecs/communication/../internals/app-builder.html"><code>AppBuilder</code></a> (including through a <a href="ecs/communication/../../organization/plugins.html">plugin</a>), there are two ways to add resources:</p>
 <ol>
 <li>
-<p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_resource"><code>init_resource</code></a>, which registers the resource type specified in its type parameter.</p>
+<p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_resource"><code>init_resource</code></a>, which adds a resource of the type specified in its type parameter, with a starting value given by its <code>Default</code> trait.</p>
 </li>
 <li>
-<p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource"><code>.add_resource</code></a>, which also sets a starting value for that type.</p>
+<p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource"><code>.add_resource</code></a>, which sets a custom starting value for that type.</p>
 </li>
 </ol>
 <p>Use <code>.init_resource</code> when you're not sure what data you need in the resource at the time of its creation, and use <code>.add_resource</code> when you have a good starting value.</p>
-<p>You can use these methods:
-1. Directly on the <a href="ecs/communication/../internals/app-builder.html">AppBuilder</a>.
-2. Through <a href="ecs/communication/commands.html">commands</a>, which don't take effect until the end of the current stage. This allows you to add or overwrite Resources at runtime, although in most cases you shouldn't need to. If you just need to modify a resource, instead create a system that gets a <code>ResMut</code> to the resource in question, then modify it there.
-3. As part of a <a href="ecs/communication/../../organization/plugins.html">plugin</a>, to keep your code well-organized, which you then add to the app builder. These are constructed using commands as well, so they also have delayed effect.</p>
-<p>Despite the fact that <code>.init_resource</code> and <code>.add_resource</code> are <code>AppBuilder</code> methods, not <code>Commands</code> methods, we can still use them on our <code>commands</code> object that's accessed by our plugins and systems. Commands accumulates changes, then applies them to the <code>AppBuilder</code> at the end of the current stage.</p>
+<p>If you need to add or overwrite Resources at run-time, consider using <a href="ecs/communication/commands.html">commands</a> with the <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_resource">.insert_resource</a> method, which works the same as <code>.add_resource</code> above. Be mindful though: commands don't take effect until the end of each stage. Most of the time, you shouldn't need to do this: to modify a resource, instead create a system that gets a <code>ResMut</code> to the resource in question, then modify it within that system.</p>
 <p>Here's how you might add resources of various types for a mock RTS game:</p>
-<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
-
-	struct InfantryStats{
-		hp: f32,
-		damage: f32,
-		speed: f32,
-	}
-
-	struct PlayerResources{
-		gold: usize,
-		wood: usize,
-	}
-
-	struct InitialPosition(f32, f32)
-
-	enum PlayerColor{
-		Red,
-		Blue,
-		Pink
-	}
-
-	fn main() {
-		App::build()
-		.add_resource::&lt;InfantryStats&gt;()
-		.init_resource(PlayerResources{gold: 1000, wood: 500})
-		.init_resource(InitialPosition(0,0))
-		.init_resource(PlayerColor::Pink)
-		.run();
-	}
-</code></pre></pre>
-<p>If you're frequently using <code>init_resource()</code> for a specific type (such as in <code>Local</code> resources), you should consider setting up <code>impl Default</code> or a <code>new</code> method for that type.</p>
-<p>If you need to use a not thread safe resource, here's an example of how you might set and access it:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
-</span><span class="boring">}
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/adding_resources.rs}}
+<span class="boring">}
 </span></code></pre></pre>
 <h3><a class="header" href="#thread-local-resources" id="thread-local-resources">Thread-local Resources</a></h3>
 <p>If you need a resource that is not thread-safe, you first need to create it with: <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_thread_local_resource"><code>.add_thread_local_resource</code></a> or <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_local_resource"><code>.init_thread_local_resource</code></a>, whose behavior corresponds to the <code>add_resource</code> and <code>init_resource</code> methods described above. </p>
 <p>Be aware: thread-local resources created in this way are a completely distinct concept from those created with the <code>.insert_local_resource</code> method, which use the <code>Local</code> resource smart pointer, which creates a unique instantiation of the resource in the system it is referred to.</p>
 <p>Once you have your thread-local resource, you need to use &quot;thread-local systems&quot; (see the corresponding <a href="ecs/communication/../systems.html">section</a> in this book for more information) to manipulate it, which gives you a complete global lock on the entire <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.App.html">app</a>, with <code>World</code> and all of its <code>Resources</code>.</p>
-<p>Here's an example in action:</p>
+<p>Here's how you might set and access such a resource:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
-</span><span class="boring">}
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/thread_local_resources.rs}}
+<span class="boring">}
 </span></code></pre></pre>
 <h3><a class="header" href="#system-local-resources" id="system-local-resources">System-Local Resources</a></h3>
 <p>System-local resources are mutable, scoped resources that are only available in the system that created them. Their state persists between time steps, but not between distinct systems created using the same function, as they work off of the <code>SystemId</code> created at their time of registration.</p>
@@ -451,59 +337,20 @@ You might want to use resources for storing and configuring settings, handling a
 <p>Here's an example showing you how and why you might want to use system-local resources:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
-</span><span class="boring">}
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/system_local_resources.rs}}
+<span class="boring">}
 </span></code></pre></pre>
 <h2><a class="header" href="#ensuring-unique-resource-types" id="ensuring-unique-resource-types">Ensuring Unique Resource Types</a></h2>
 <p>When any of the resource creation methods is called on a type that already exists (with the caveat that system-local resources are effectively scoped), Bevy will overwrite any existing data. As a result, you only ever want to have one resource of a given type in your app at once.</p>
 <p>Here are a few patterns you can use to ensure that your resources have a unique type:</p>
-<pre><pre class="playground"><code class="language-rust">	// In this example, we need many different Resources that use an f32 to store its data
-
-	// Creating a type alias for f32
-	let Score = f32;
-
-	// Creating a simple tuple struct
-	// You can do the exact same thing with an ordinary struct if you want the field name
-	struct FallingThreshold(f32);
-	
-	// Adding the Deref trait makes these simple structures much more pleasant to work with
-	// You always want the inner data anyways
-	impl Deref for FallingThreshold{
-		type Target = Timer;
-
-		fn deref(&amp;self) -&gt; &amp;Self::Target {
-			&amp;self.0
-		}
-	}
-
-	impl DerefMut for FallingThreshold{
-		fn deref_mut(&amp;mut self) -&gt; &amp;mut Timer {
-			&amp;mut self.0
-		}
-	}
-
-	// Creating a marker struct to combine with our data as a tuple type
-	// You could easily reuse these as marker components as well
-	struct Friendly;
-	struct Hostile
-
-	fn main() {
-		App::build()
-		// Don't do this: it's really hard to debug and read
-		// And also hard to extend with new behavior or traits
-		.add_resource::&lt;f32&gt;()
-		// This overwrites our previous f32, since type aliasing doesn't create a new type
-		.add_resource::&lt;Score&gt;()
-		// FallingThreshold is its own type, despite being used like a raw f32
-		.add_resource::&lt;FallingThreshold&gt;()
-		// (Friendly, f32) and (Hostile, f32) are unique types, disambiguating properly
-		.add_resource::&lt;(Friendly, f32)&gt;()
-		.add_resource::&lt;(Hostile, f32)&gt;()
-		.run();
-	}
-</code></pre></pre>
-<h2><a class="header" href="#using-resources" id="using-resources">Using Resources</a></h2>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/unique_resource_types.rs}}
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#using-resources-in-your-systems" id="using-resources-in-your-systems">Using Resources in Your Systems</a></h2>
 <p>In order to access resources in a system, wrap the resource type in your function parameters in one of the three smart-pointers.</p>
 <ol>
 <li>
@@ -521,9 +368,9 @@ You might want to use resources for storing and configuring settings, handling a
 <p>We can see the differences between these different resource types in this simple example:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
-</span><span class="boring">}
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/resource_smart_pointers.rs}}
+<span class="boring">}
 </span></code></pre></pre>
 <h1><a class="header" href="#commands" id="commands">Commands</a></h1>
 <h1><a class="header" href="#events" id="events">Events</a></h1>

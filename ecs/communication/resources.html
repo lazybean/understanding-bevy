@@ -169,69 +169,34 @@ You might want to use resources for storing and configuring settings, handling a
 <p>You can use virtually any Rust type as a resource, but if possible, you're going to want your resources to be thread-safe: <code>'static</code> lifetime and <code>Send + Sync</code>.</p>
 <h2><a class="header" href="#creating-resources" id="creating-resources">Creating Resources</a></h2>
 <p>Assuming that we're working with a thread-safe resource that isn't system local, there are two different ways we can add resources to our app.</p>
+<p>When you're working with your <a href="../internals/app-builder.html"><code>AppBuilder</code></a> (including through a <a href="../../organization/plugins.html">plugin</a>), there are two ways to add resources:</p>
 <ol>
 <li>
-<p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_resource"><code>init_resource</code></a>, which registers the resource type specified in its type parameter.</p>
+<p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_resource"><code>init_resource</code></a>, which adds a resource of the type specified in its type parameter, with a starting value given by its <code>Default</code> trait.</p>
 </li>
 <li>
-<p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource"><code>.add_resource</code></a>, which also sets a starting value for that type.</p>
+<p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource"><code>.add_resource</code></a>, which sets a custom starting value for that type.</p>
 </li>
 </ol>
 <p>Use <code>.init_resource</code> when you're not sure what data you need in the resource at the time of its creation, and use <code>.add_resource</code> when you have a good starting value.</p>
-<p>You can use these methods:
-1. Directly on the <a href="../internals/app-builder.html">AppBuilder</a>.
-2. Through <a href="commands.html">commands</a>, which don't take effect until the end of the current stage. This allows you to add or overwrite Resources at runtime, although in most cases you shouldn't need to. If you just need to modify a resource, instead create a system that gets a <code>ResMut</code> to the resource in question, then modify it there.
-3. As part of a <a href="../../organization/plugins.html">plugin</a>, to keep your code well-organized, which you then add to the app builder. These are constructed using commands as well, so they also have delayed effect.</p>
-<p>Despite the fact that <code>.init_resource</code> and <code>.add_resource</code> are <code>AppBuilder</code> methods, not <code>Commands</code> methods, we can still use them on our <code>commands</code> object that's accessed by our plugins and systems. Commands accumulates changes, then applies them to the <code>AppBuilder</code> at the end of the current stage.</p>
+<p>If you need to add or overwrite Resources at run-time, consider using <a href="commands.html">commands</a> with the <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_resource">.insert_resource</a> method, which works the same as <code>.add_resource</code> above. Be mindful though: commands don't take effect until the end of each stage. Most of the time, you shouldn't need to do this: to modify a resource, instead create a system that gets a <code>ResMut</code> to the resource in question, then modify it within that system.</p>
 <p>Here's how you might add resources of various types for a mock RTS game:</p>
-<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
-
-	struct InfantryStats{
-		hp: f32,
-		damage: f32,
-		speed: f32,
-	}
-
-	struct PlayerResources{
-		gold: usize,
-		wood: usize,
-	}
-
-	struct InitialPosition(f32, f32)
-
-	enum PlayerColor{
-		Red,
-		Blue,
-		Pink
-	}
-
-	fn main() {
-		App::build()
-		.add_resource::&lt;InfantryStats&gt;()
-		.init_resource(PlayerResources{gold: 1000, wood: 500})
-		.init_resource(InitialPosition(0,0))
-		.init_resource(PlayerColor::Pink)
-		.run();
-	}
-</code></pre></pre>
-<p>If you're frequently using <code>init_resource()</code> for a specific type (such as in <code>Local</code> resources), you should consider setting up <code>impl Default</code> or a <code>new</code> method for that type.</p>
-<p>If you need to use a not thread safe resource, here's an example of how you might set and access it:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
-</span><span class="boring">}
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/adding_resources.rs}}
+<span class="boring">}
 </span></code></pre></pre>
 <h3><a class="header" href="#thread-local-resources" id="thread-local-resources">Thread-local Resources</a></h3>
 <p>If you need a resource that is not thread-safe, you first need to create it with: <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_thread_local_resource"><code>.add_thread_local_resource</code></a> or <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_local_resource"><code>.init_thread_local_resource</code></a>, whose behavior corresponds to the <code>add_resource</code> and <code>init_resource</code> methods described above. </p>
 <p>Be aware: thread-local resources created in this way are a completely distinct concept from those created with the <code>.insert_local_resource</code> method, which use the <code>Local</code> resource smart pointer, which creates a unique instantiation of the resource in the system it is referred to.</p>
 <p>Once you have your thread-local resource, you need to use &quot;thread-local systems&quot; (see the corresponding <a href="../systems.html">section</a> in this book for more information) to manipulate it, which gives you a complete global lock on the entire <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.App.html">app</a>, with <code>World</code> and all of its <code>Resources</code>.</p>
-<p>Here's an example in action:</p>
+<p>Here's how you might set and access such a resource:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
-</span><span class="boring">}
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/thread_local_resources.rs}}
+<span class="boring">}
 </span></code></pre></pre>
 <h3><a class="header" href="#system-local-resources" id="system-local-resources">System-Local Resources</a></h3>
 <p>System-local resources are mutable, scoped resources that are only available in the system that created them. Their state persists between time steps, but not between distinct systems created using the same function, as they work off of the <code>SystemId</code> created at their time of registration.</p>
@@ -239,59 +204,20 @@ You might want to use resources for storing and configuring settings, handling a
 <p>Here's an example showing you how and why you might want to use system-local resources:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
-</span><span class="boring">}
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/system_local_resources.rs}}
+<span class="boring">}
 </span></code></pre></pre>
 <h2><a class="header" href="#ensuring-unique-resource-types" id="ensuring-unique-resource-types">Ensuring Unique Resource Types</a></h2>
 <p>When any of the resource creation methods is called on a type that already exists (with the caveat that system-local resources are effectively scoped), Bevy will overwrite any existing data. As a result, you only ever want to have one resource of a given type in your app at once.</p>
 <p>Here are a few patterns you can use to ensure that your resources have a unique type:</p>
-<pre><pre class="playground"><code class="language-rust">	// In this example, we need many different Resources that use an f32 to store its data
-
-	// Creating a type alias for f32
-	let Score = f32;
-
-	// Creating a simple tuple struct
-	// You can do the exact same thing with an ordinary struct if you want the field name
-	struct FallingThreshold(f32);
-	
-	// Adding the Deref trait makes these simple structures much more pleasant to work with
-	// You always want the inner data anyways
-	impl Deref for FallingThreshold{
-		type Target = Timer;
-
-		fn deref(&amp;self) -&gt; &amp;Self::Target {
-			&amp;self.0
-		}
-	}
-
-	impl DerefMut for FallingThreshold{
-		fn deref_mut(&amp;mut self) -&gt; &amp;mut Timer {
-			&amp;mut self.0
-		}
-	}
-
-	// Creating a marker struct to combine with our data as a tuple type
-	// You could easily reuse these as marker components as well
-	struct Friendly;
-	struct Hostile
-
-	fn main() {
-		App::build()
-		// Don't do this: it's really hard to debug and read
-		// And also hard to extend with new behavior or traits
-		.add_resource::&lt;f32&gt;()
-		// This overwrites our previous f32, since type aliasing doesn't create a new type
-		.add_resource::&lt;Score&gt;()
-		// FallingThreshold is its own type, despite being used like a raw f32
-		.add_resource::&lt;FallingThreshold&gt;()
-		// (Friendly, f32) and (Hostile, f32) are unique types, disambiguating properly
-		.add_resource::&lt;(Friendly, f32)&gt;()
-		.add_resource::&lt;(Hostile, f32)&gt;()
-		.run();
-	}
-</code></pre></pre>
-<h2><a class="header" href="#using-resources" id="using-resources">Using Resources</a></h2>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/unique_resource_types.rs}}
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#using-resources-in-your-systems" id="using-resources-in-your-systems">Using Resources in Your Systems</a></h2>
 <p>In order to access resources in a system, wrap the resource type in your function parameters in one of the three smart-pointers.</p>
 <ol>
 <li>
@@ -309,9 +235,9 @@ You might want to use resources for storing and configuring settings, handling a
 <p>We can see the differences between these different resource types in this simple example:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span>
-<span class="boring">fn main() {
-</span><span class="boring">}
+</span><span class="boring">fn main() {
+</span>{{#include _resources_code/examples/resource_smart_pointers.rs}}
+<span class="boring">}
 </span></code></pre></pre>
 
                     </main>
