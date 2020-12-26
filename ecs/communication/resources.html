@@ -199,9 +199,9 @@ You might want to use resources for storing and configuring settings, handling a
 <span class="boring">}
 </span></code></pre></pre>
 <h3><a class="header" href="#system-local-resources" id="system-local-resources">System-Local Resources</a></h3>
-<p>System-local resources are mutable, scoped resources that are only available in the system that created them. Their state persists between time steps, but not between distinct systems created using the same function, as they work off of the <code>SystemId</code> created at their time of registration.</p>
+<p>System-local resources are scoped, mutable resources that are only available in the system that created them. Their state persists between time steps, but not between distinct systems created using the same function, as they work off of the <code>SystemId</code> created at their time of registration.</p>
 <p>In typical use, system-local resources are created implicitly, through the use of a <code>Local</code> resource smart-pointer type on one of the function arguments in your system. If you had some reason to manually create or overwrite them, you could instead use <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_local_resource"><code>.insert_local_resource</code></a>.</p>
-<p>Here's an example showing you how and why you might want to use system-local resources:</p>
+<p>Here's an example showing the power of system-local resources when combined with generic systems:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
