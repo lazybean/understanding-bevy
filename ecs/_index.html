@@ -165,7 +165,7 @@
                     <main>
                         <h1><a class="header" href="#entities-components-and-systems" id="entities-components-and-systems">Entities, Components and Systems</a></h1>
 <p>Bevy supported version:</p>
-<pre><code>{{#include _index_code/Cargo.toml:10}}
+<pre><code>bevy = &quot;0.4&quot;
 </code></pre>
 <p>At its heart, Bevy operates using an <a href="https://en.wikipedia.org/wiki/Entity_component_system">Entity-Component-System</a> model. Rather than operating in a traditional object-oriented fashion, where your game is composed of individual objects with properties and methods, ECS games work in a fashion that is much closer to a relational database: grouping similar data together in a memory-dense fashion, with the <code>Entity</code> serving as a primary key to identify the data, then processing the game data in a batch-wise fashion.</p>
 <p>Games in Bevy are largely composed of five core building blocks, that come up again and again:</p>
@@ -179,34 +179,122 @@
 <h2><a class="header" href="#getting-started" id="getting-started">Getting Started</a></h2>
 <p>To get started, <a href="https://www.rust-lang.org/tools/install">Install Rust</a>, then set up a new Bevy project (&quot;Add Bevy as a Dependency&quot;) as described in the <a href="https://bevyengine.org/learn/book/getting-started/">official book</a>.</p>
 <p>The boilerplate needed to make your own app is simple:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{{#include _index_code/examples/boilerplate.rs}}
-<span class="boring">}
-</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
+
+fn main() {
+    App::build().run();
+}
+</code></pre></pre>
 <p>If you're looking for some useful functionality out of the box (windowing, graphics, input, a scheduler that automatically loops etc.), you'll want to add <a href="https://docs.rs/bevy/0.4.0/bevy/struct.DefaultPlugins.html"><code>DefaultPlugins</code></a> as well.</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{{#include _index_code/examples/default_plugins.rs}}
-<span class="boring">}
-</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
+
+fn main() {
+    App::build().add_plugins(DefaultPlugins).run();
+}
+</code></pre></pre>
 <p>If all you need is a simple scheduler, you can use the minimal <a href="https://docs.rs/bevy/0.4.0/bevy/struct.MinimalPlugins.html"><code>MinimalPlugins</code></a> instead. This is a nice pattern for writing tests or examples, but could also be useful for running in headless mode or if you wanted to use Bevy's scheduler and ECS as part of a program that doesn't a GUI frontend.</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{{#include _index_code/examples/minimal_plugins.rs}}
-<span class="boring">}
-</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
+
+fn main() {
+    App::build().add_plugins(MinimalPlugins).run();
+}
+</code></pre></pre>
 <p>By chaining methods together on the <a href="internals/app-builder.html"><code>AppBuilder</code></a> that we created with <code>App::build</code>, we can carefully build up our game's functionality in a modular fashion with the <a href="https://refactoring.guru/design-patterns/builder">Builder pattern</a>.</p>
 <p>To give you a taste of the syntax for Bevy's ECS, here's a not-quite-minimal Hello World example: </p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{{#include _index_code/examples/hello_world.rs}}
-<span class="boring">}
-</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
+use std::collections::HashMap;
+use std::fmt;
+
+// Denizen is a &quot;marker component&quot; here, to allow us to filter for denizens in our queries
+// In general, marker components do not store data, and are just used for queries
+// Marker components are talked about in more detail in section 2.2: Components
+#[derive(Debug)]
+struct Denizen;
+
+// We use the owned form String, rather than &amp;str in this struct
+// Because resources and components must be thread-safe with a 'static lifetime
+#[derive(Hash, PartialEq, Eq, Clone, Debug)]
+struct Name(String);
+
+// A custom impl of Display to ensure we can print these names nicely
+impl fmt::Display for Name {
+    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
+        write!(f, &quot;{}&quot;, self.0)
+    }
+}
+
+#[derive(Clone, Debug)]
+enum World {
+    Venus,
+    Earth,
+    Mars,
+}
+
+// Creating a unique timer type for each system that needs one allows us to be sure we're grabbing the right one
+struct HelloTimer(Timer);
+
+fn main() {
+    App::build()
+        // We add the default plugins so our game will loop
+        // This also adds the Time resource that we use in `say_hello`
+        .add_plugins(DefaultPlugins)
+        // We're creating a HashMap to record which planet entities a name are on
+        .add_resource(HashMap::&lt;Name, World&gt;::new())
+        // Startup systems only run once, before normal systems take place
+        .add_startup_system(place_denizens.system())
+        // When systems cannot be run in parallel, priority is based on insertion order
+        .add_startup_system(spawn_denizens.system())
+        // The `say_hello` system will be run every frame, but only prints when the timer is complete
+        // (See `say_hello` logic)
+        .add_resource(HelloTimer(Timer::from_seconds(2.0, true)))
+        .add_system(say_hello.system())
+        .run();
+}
+
+// Because we're modifying the `directory` argument, we need to get the mutable version of it with `ResMut`
+// Bevy's ECS finds a Resource with the matching type; we want to be sure we have exactly one resource of each type that we need
+fn place_denizens(mut directory: ResMut&lt;HashMap&lt;Name, World&gt;&gt;) {
+    // .into() converts our string literal from &amp;str to the required String
+    directory.insert(Name(&quot;Alice&quot;.into()), World::Venus);
+    directory.insert(Name(&quot;Bevy&quot;.into()), World::Earth);
+    directory.insert(Name(&quot;Cart&quot;.into()), World::Mars);
+}
+
+// The special `Commands` resource queues up actions that should be performed to modify the World
+// We only need to read from the directory resource, so we can call it with `Res` instead of `ResMut`
+fn spawn_denizens(commands: &amp;mut Commands, directory: Res&lt;HashMap&lt;Name, World&gt;&gt;) {
+    // We need to use .clone and .into_iter rather than .iter here
+    // to satisfy the lifetime requirements of .spawn()
+    for (name, world) in directory.clone().into_iter() {
+        if name == Name(&quot;Bevy&quot;.into()) {
+            // .spawn creates new entities with the specified components
+            // each tuple entry is a different component
+            commands.spawn((name, world));
+        } else {
+            // Only Alice and Cart are Denizens, so Bevy will be excluded from our query filter in `say_hello`
+            commands.spawn((name, world, Denizen));
+        }
+    }
+}
+
+// Queries extract each entity that have all of the components specified in their first type argument
+// They only return the components specified in the query, not any other components that may be associated with the entities
+// The second type argument is a query filter, which restricts which entities are actually provided
+fn say_hello(
+    query: Query&lt;(&amp;Name, &amp;World), With&lt;Denizen&gt;&gt;,
+    mut timer: ResMut&lt;HelloTimer&gt;,
+    time: Res&lt;Time&gt;,
+) {
+    // Only run this system when the timer has elapsed
+    if timer.0.tick(time.delta_seconds()).just_finished() {
+        // Iterating over and then unpacking the query gives us access to the components for each of its entities
+        for (name, world) in query.iter() {
+            // Because we're querying for &amp;Query and &amp;World, we need to dereference them before we work with them
+            println!(&quot;Hello {:?}, my name is {}!&quot;, *world, *name);
+        }
+    }
+}
+</code></pre></pre>
 <p>If you want to dive right into more realistic code-bases, check out the extensive <a href="https://github.com/bevyengine/bevy/tree/master/examples">examples</a> section of the official repo, or the examples and tutorials found at <a href="https://github.com/bevyengine/awesome-bevy#games">awesome-bevy</a>.</p>
 
                     </main>
