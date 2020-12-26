@@ -39,12 +39,12 @@ Here's how you might set and access such a resource:
 
 ### System-Local Resources
 
-System-local resources are mutable, scoped resources that are only available in the system that created them. Their state persists between time steps, but not between distinct systems created using the same function, as they work off of the `SystemId` created at their time of registration.
+System-local resources are scoped, mutable resources that are only available in the system that created them. Their state persists between time steps, but not between distinct systems created using the same function, as they work off of the `SystemId` created at their time of registration.
 
 In typical use, system-local resources are created implicitly, through the use of a `Local` resource smart-pointer type on one of the function arguments in your system. If you had some reason to manually create or overwrite them, you could instead use [`.insert_local_resource`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_local_resource).
 
 
-Here's an example showing you how and why you might want to use system-local resources:
+Here's an example showing the power of system-local resources when combined with generic systems:
 ```rust
 {{#include _resources_code/examples/system_local_resources.rs}}
 ```
