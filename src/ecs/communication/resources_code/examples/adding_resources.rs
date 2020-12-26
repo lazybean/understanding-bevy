@@ -35,6 +35,7 @@ enum PlayerColor {
 fn main() {
     App::build()
         .init_resource::<InfantryStats>()
+        // Ordinary structs, tuple structs and enums can all be used as resources
         .add_resource(PlayerResources {
             gold: 1000,
             wood: 500,
