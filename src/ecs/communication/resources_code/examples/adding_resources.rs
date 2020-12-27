@@ -24,7 +24,7 @@ struct PlayerResources {
     wood: usize,
 }
 
-struct InitialPosition(i32, i32);
+struct MaxUnits(i32);
 
 enum PlayerColor {
     Red,
@@ -35,12 +35,12 @@ enum PlayerColor {
 fn main() {
     App::build()
         .init_resource::<InfantryStats>()
-        // Ordinary structs, tuple structs and enums can all be used as resources
+        // Structs and enums can all be used as resources
         .add_resource(PlayerResources {
             gold: 1000,
             wood: 500,
         })
-        .add_resource(InitialPosition(0, 0))
+        .add_resource(MaxUnits(100))
         .add_resource(PlayerColor::Pink)
         .run();
 }

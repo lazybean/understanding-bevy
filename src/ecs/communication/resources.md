@@ -15,7 +15,7 @@ When you're working with your [`AppBuilder`](../internals/app-builder.md) (inclu
 
 2. [`.add_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource), which sets a custom starting value for that type.
 
-Use `.init_resource` when you're not sure what data you need in the resource at the time of its creation, and use `.add_resource` when you have a good starting value.
+Use `.init_resource` when you're planning to set it in a later system (perhaps because you need more complex logic), and use `.add_resource` when you have a good starting value.
 
 If you need to add or overwrite Resources at run-time, consider using [commands](commands.md) with the [.insert_resource](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_resource) method, which works the same as `.add_resource` above. Be mindful though: commands don't take effect until the end of each stage. Most of the time, you shouldn't need to do this: to modify a resource, instead create a system that gets a `ResMut` to the resource in question, then modify it within that system.
 
@@ -30,10 +30,9 @@ If you need a resource that is not thread-safe, you first need to create it with
 
 You might need to use resources that aren't thread-safe when:
 
-- working with exceptionally large objects that you don't want to pass across threads
-- handling audio-processing
-- handling network-queues
+- interfacing with a scripting language like Lua that isn't thread-safe
 - manipulating reference-counted objects
+- handling audio-processing, network-queues or other complex data structures that are hard to make thread-safe
 
 Be aware: thread-local resources created in this way are a completely distinct concept from those created with the `.insert_local_resource` method, which use the `Local` resource smart pointer, which creates a unique instantiation of the resource in the system it is referred to.
 
