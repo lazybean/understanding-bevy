@@ -2,9 +2,9 @@
 
 - [Introduction](introduction.md)
 - [Entities, Components and Systems](ecs/_index.md)
-  - [Entities](ecs/entities.md)
-  - [Components](ecs/components.md)
   - [Systems, Queries and Query Filters](ecs/systems.md)
+  - [Components](ecs/components.md)
+  - [Entities](ecs/entities.md)
   - [Tools for Intersystem Communication](ecs/communication/_index.md)
     - [Resources](ecs/communication/resources.md)
     - [Commands](ecs/communication/commands.md)
