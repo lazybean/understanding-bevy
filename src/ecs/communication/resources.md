@@ -26,16 +26,20 @@ Here's how you might add resources of various types for a mock RTS game:
 
 ### Thread-local Resources
 
-If you need a resource that is not thread-safe, you first need to create it with: [`.add_thread_local_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_thread_local_resource) or [`.init_thread_local_resource`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_local_resource), whose behavior corresponds to the `add_resource` and `init_resource` methods described above. 
+If you need a resource that is not thread-safe, you first need to create it with: [`.add_thread_local_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_thread_local_resource) or [`.init_thread_local_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_thread_local_resource), whose behavior corresponds to the `add_resource` and `init_resource` methods described above. 
+
+You might need to use resources that aren't thread-safe when:
+
+- working with exceptionally large objects that you don't want to pass across threads
+- handling audio-processing
+- handling network-queues
+- manipulating reference-counted objects
 
 Be aware: thread-local resources created in this way are a completely distinct concept from those created with the `.insert_local_resource` method, which use the `Local` resource smart pointer, which creates a unique instantiation of the resource in the system it is referred to.
 
 Once you have your thread-local resource, you need to use "thread-local systems" (see the corresponding [section](../systems.md) in this book for more information) to manipulate it, which gives you a complete global lock on the entire [app](https://docs.rs/bevy/0.4.0/bevy/app/struct.App.html), with `World` and all of its `Resources`.
 
-Here's how you might set and access such a resource:
-```rust
-{{#include resources_code/examples/thread_local_resources.rs}}
-```
+You can see how you might use thread-local resources in [thread-local systems](../systems.md).
 
 ### System-Local Resources
 
