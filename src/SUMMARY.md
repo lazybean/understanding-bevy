@@ -4,7 +4,7 @@
 - [Entities, Components and Systems](ecs/_index.md)
   - [Entities and Components](ecs/components.md)
   - [Systems amd Queries](ecs/systems.md)
-  - [Resources](ecs/communication/resources.md)  
+  - [Resources](ecs/resources.md)  
   - [Entities](ecs/entities.md)
   - [Tools for Intersystem Communication](ecs/communication/_index.md)
     - [Commands](ecs/communication/commands.md)
