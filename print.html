@@ -170,7 +170,7 @@
 <p>This book is deliberately opinionated: rather than simply reiterating the API that Bevy offers you, it attempts to provide context on the options available and when you should reach for a particular tool. 
 Ideally, this book will teach how you should write elegant, performant and idiomatic game code in Bevy + Rust and Bevy and steer you away from obvious pitfalls that may seem tempting at first glance.</p>
 <p>Right now, many of these sections of this book are incomplete, but the sections that are complete should be quite helpful and usable. This book, and the advice in it, is likely to remain very unstable until Bevy hits 1.0 at some point in the distant future.</p>
-<h2><a class="header" href="#why-you-should-use-bevy" id="why-you-should-use-bevy"> Why You Should Use Bevy </a></h2>
+<h2><a class="header" href="#why-you-should-use-bevy" id="why-you-should-use-bevy">Why You Should Use Bevy</a></h2>
 <ul>
 <li>
 <p>blazing fast ECS system with exceptional ergonomics: minimal boilerplate, repeated use of a few simple and powerful patterns</p>
@@ -188,7 +188,7 @@ Ideally, this book will teach how you should write elegant, performant and idiom
 <p>helpful, friendly, and expert community</p>
 </li>
 </ul>
-<h2><a class="header" href="#why-you-shouldnt-use-bevy" id="why-you-shouldnt-use-bevy"> Why You Shouldn't Use Bevy </a></h2>
+<h2><a class="header" href="#why-you-shouldnt-use-bevy" id="why-you-shouldnt-use-bevy">Why You Shouldn't Use Bevy</a></h2>
 <ul>
 <li>
 <p>immature: many core functionalities (e.g. asset pipelines, scripting pipelines, advanced scenes, networking) are still incomplete</p>
@@ -203,7 +203,7 @@ Ideally, this book will teach how you should write elegant, performant and idiom
 <p>poorly documented (hence this book!)</p>
 </li>
 </ul>
-<h2><a class="header" href="#resources" id="resources"> Resources </a></h2>
+<h2><a class="header" href="#further-reading" id="further-reading">Further Reading</a></h2>
 <p>As you read along, there are a few key resources you should be aware of:</p>
 <ul>
 <li>
@@ -387,7 +387,7 @@ fn say_hello(
 <li><a href="ecs/communication/chaining.html">Chain</a> one system directly into another while passing some data: handy for tightly coupled systems.</li>
 </ol>
 <p>While you <em>can</em> probably coerce most of these approaches to perform another's role, your code will be harder to read, harder to maintain, and very possibly less performant. Skim each of the sections linked to get a brief overview, then come back to them in detail when you need to implement that approach.</p>
-<h1><a class="header" href="#resources-1" id="resources-1">Resources</a></h1>
+<h1><a class="header" href="#resources" id="resources">Resources</a></h1>
 <p><a href="https://docs.rs/bevy/0.4.0/bevy/ecs/trait.Resource.html">Resources</a> are global singletons, accessed by their type, which can be used to store global state.
 You might want to use resources for storing and configuring settings, handling a complex data structure like a player's inventory that doesn't fit naturally into the ECS model, or tracking game state like the player's score.</p>
 <p>You can use virtually any Rust type as a resource, but if possible, you're going to want your resources to be thread-safe: <code>'static</code> lifetime and <code>Send + Sync</code>.</p>
