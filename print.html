@@ -167,6 +167,9 @@
                     <main>
                         <h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
 <p><a href="https://bevyengine.org/">Bevy</a> is a fantastic, free, open source, ECS-style game engine written in Rust. This book is <a href="https://github.com/alice-i-cecile">my</a> attempt to collect, summarize and contextualize the engine and its ecosystem. This book was written for Bevy 0.4, and assumes familiarity with core Rust concepts (like lifetimes, traits, objects and iterators), but no previous experience with either Bevy or game programming as a whole. If you have any suggestions, questions, or spot an error, please feel free to open an issue on this site's <a href="https://github.com/alice-i-cecile/understanding-bevy.github.io">Github</a>.</p>
+<p>This book is deliberately opinionated: rather than simply reiterating the API that Bevy offers you, it attempts to provide context on the options available and when you should reach for a particular tool. 
+Ideally, this book will teach how you should write elegant, performant and idiomatic game code in Bevy + Rust and Bevy and steer you away from obvious pitfalls that may seem tempting at first glance.</p>
+<p>Right now, many of these sections of this book are incomplete, but the sections that are complete should be quite helpful and usable. This book, and the advice in it, is likely to remain very unstable until Bevy hits 1.0 at some point in the distant future.</p>
 <h2><a class="header" href="#why-you-should-use-bevy" id="why-you-should-use-bevy"> Why You Should Use Bevy </a></h2>
 <ul>
 <li>
@@ -399,7 +402,7 @@ You might want to use resources for storing and configuring settings, handling a
 <p><a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_resource"><code>.add_resource</code></a>, which sets a custom starting value for that type.</p>
 </li>
 </ol>
-<p>Use <code>.init_resource</code> when you're not sure what data you need in the resource at the time of its creation, and use <code>.add_resource</code> when you have a good starting value.</p>
+<p>Use <code>.init_resource</code> when you're planning to set it in a later system (perhaps because you need more complex logic), and use <code>.add_resource</code> when you have a good starting value.</p>
 <p>If you need to add or overwrite Resources at run-time, consider using <a href="ecs/communication/commands.html">commands</a> with the <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_resource">.insert_resource</a> method, which works the same as <code>.add_resource</code> above. Be mindful though: commands don't take effect until the end of each stage. Most of the time, you shouldn't need to do this: to modify a resource, instead create a system that gets a <code>ResMut</code> to the resource in question, then modify it within that system.</p>
 <p>Here's how you might add resources of various types for a mock RTS game:</p>
 <pre><pre class="playground"><code class="language-rust">#![allow(warnings)]
@@ -428,7 +431,7 @@ struct PlayerResources {
     wood: usize,
 }
 
-struct InitialPosition(i32, i32);
+struct MaxUnits(i32);
 
 enum PlayerColor {
     Red,
@@ -439,12 +442,12 @@ enum PlayerColor {
 fn main() {
     App::build()
         .init_resource::&lt;InfantryStats&gt;()
-        // Ordinary structs, tuple structs and enums can all be used as resources
+        // Structs and enums can all be used as resources
         .add_resource(PlayerResources {
             gold: 1000,
             wood: 500,
         })
-        .add_resource(InitialPosition(0, 0))
+        .add_resource(MaxUnits(100))
         .add_resource(PlayerColor::Pink)
         .run();
 }
@@ -453,10 +456,9 @@ fn main() {
 <p>If you need a resource that is not thread-safe, you first need to create it with: <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_thread_local_resource"><code>.add_thread_local_resource</code></a> or <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_thread_local_resource"><code>.init_thread_local_resource</code></a>, whose behavior corresponds to the <code>add_resource</code> and <code>init_resource</code> methods described above. </p>
 <p>You might need to use resources that aren't thread-safe when:</p>
 <ul>
-<li>working with exceptionally large objects that you don't want to pass across threads</li>
-<li>handling audio-processing</li>
-<li>handling network-queues</li>
+<li>interfacing with a scripting language like Lua that isn't thread-safe</li>
 <li>manipulating reference-counted objects</li>
+<li>handling audio-processing, network-queues or other complex data structures that are hard to make thread-safe</li>
 </ul>
 <p>Be aware: thread-local resources created in this way are a completely distinct concept from those created with the <code>.insert_local_resource</code> method, which use the <code>Local</code> resource smart pointer, which creates a unique instantiation of the resource in the system it is referred to.</p>
 <p>Once you have your thread-local resource, you need to use &quot;thread-local systems&quot; (see the corresponding <a href="ecs/communication/../systems.html">section</a> in this book for more information) to manipulate it, which gives you a complete global lock on the entire <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.App.html">app</a>, with <code>World</code> and all of its <code>Resources</code>.</p>
