@@ -7,7 +7,7 @@ Ideally, this book will teach how you should write elegant, performant and idiom
 
 Right now, many of these sections of this book are incomplete, but the sections that are complete should be quite helpful and usable. This book, and the advice in it, is likely to remain very unstable until Bevy hits 1.0 at some point in the distant future.
 
-<h2> Why You Should Use Bevy </h2>
+## Why You Should Use Bevy
 
 - blazing fast ECS system with exceptional ergonomics: minimal boilerplate, repeated use of a few simple and powerful patterns
 
@@ -19,7 +19,7 @@ Right now, many of these sections of this book are incomplete, but the sections 
 
 - helpful, friendly, and expert community
 
-<h2> Why You Shouldn't Use Bevy </h2>
+## Why You Shouldn't Use Bevy
 
 - immature: many core functionalities (e.g. asset pipelines, scripting pipelines, advanced scenes, networking) are still incomplete
 
@@ -29,7 +29,7 @@ Right now, many of these sections of this book are incomplete, but the sections 
 
 - poorly documented (hence this book!)
 
-<h2> Resources </h2>
+## Further Reading
 
 As you read along, there are a few key resources you should be aware of:
 
