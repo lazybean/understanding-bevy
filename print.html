@@ -450,16 +450,17 @@ fn main() {
 }
 </code></pre></pre>
 <h3><a class="header" href="#thread-local-resources" id="thread-local-resources">Thread-local Resources</a></h3>
-<p>If you need a resource that is not thread-safe, you first need to create it with: <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_thread_local_resource"><code>.add_thread_local_resource</code></a> or <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_local_resource"><code>.init_thread_local_resource</code></a>, whose behavior corresponds to the <code>add_resource</code> and <code>init_resource</code> methods described above. </p>
+<p>If you need a resource that is not thread-safe, you first need to create it with: <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_thread_local_resource"><code>.add_thread_local_resource</code></a> or <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_thread_local_resource"><code>.init_thread_local_resource</code></a>, whose behavior corresponds to the <code>add_resource</code> and <code>init_resource</code> methods described above. </p>
+<p>You might need to use resources that aren't thread-safe when:</p>
+<ul>
+<li>working with exceptionally large objects that you don't want to pass across threads</li>
+<li>handling audio-processing</li>
+<li>handling network-queues</li>
+<li>manipulating reference-counted objects</li>
+</ul>
 <p>Be aware: thread-local resources created in this way are a completely distinct concept from those created with the <code>.insert_local_resource</code> method, which use the <code>Local</code> resource smart pointer, which creates a unique instantiation of the resource in the system it is referred to.</p>
 <p>Once you have your thread-local resource, you need to use &quot;thread-local systems&quot; (see the corresponding <a href="ecs/communication/../systems.html">section</a> in this book for more information) to manipulate it, which gives you a complete global lock on the entire <a href="https://docs.rs/bevy/0.4.0/bevy/app/struct.App.html">app</a>, with <code>World</code> and all of its <code>Resources</code>.</p>
-<p>Here's how you might set and access such a resource:</p>
-<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
-
-fn main() {
-	App::build().add_plugins(MinimalPlugins).run();
-}
-</code></pre></pre>
+<p>You can see how you might use thread-local resources in <a href="ecs/communication/../systems.html">thread-local systems</a>.</p>
 <h3><a class="header" href="#system-local-resources" id="system-local-resources">System-Local Resources</a></h3>
 <p>System-local resources are scoped, mutable resources that are only available in the system that created them. Their state persists between time steps, but not between distinct systems created using the same function, as they work off of the <code>SystemId</code> created at their time of registration.</p>
 <p>In typical use, system-local resources are created implicitly, through the use of a <code>Local</code> resource smart-pointer type on one of the function arguments in your system. If you had some reason to manually create or overwrite them, you could instead use <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.insert_local_resource"><code>.insert_local_resource</code></a>.</p>
