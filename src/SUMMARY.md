@@ -3,7 +3,7 @@
 - [Introduction](introduction.md)
 - [Entities, Components and Systems](ecs/_index.md)
   - [Entities and Components](ecs/entities-components.md)
-  - [Systems amd Queries](ecs/systems.md)
+  - [Systems and Queries](ecs/systems-queries.md)
   - [Resources](ecs/resources.md)
   - [Control Flow and Timing](ecs/timing/_index.md)
     - [System Scheduling and Stages](ecs/timing/scheduling-stages.md)

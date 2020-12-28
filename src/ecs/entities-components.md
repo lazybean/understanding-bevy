@@ -77,9 +77,3 @@ You can add and remove components to entities with `insert`, `remove`, `insert_o
 ```rust```
 
 Like entity creation and deletion, modifying components can only be done via `Commands` or in a thread-local system and will not take effect until the end of the current stage.
-
-## Fetching Components from a Specific Entity
-
-One particularly useful but non-obvious pattern is to work with relationships between entities by storing an `Entity` on one component, then. Here's an example of how it might work. Be mindful though: the `Entity` stored in your component can easily end up stale as entities are removed, and you need to be careful that this doesn't cause panics or logic errors. 
-
-```rust ```
