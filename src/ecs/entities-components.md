@@ -65,6 +65,10 @@ Despawning entities is easy, so long as you know which entity to grab:
 Because entity creation and deletion are wide-reaching operations that involve altering archetypes, they can only be done via [`Commands`](communication/commands.md) or in a thread-local system by modifying [World](). 
 As a result, they will not take effect until the end of the current [stage](timing/stages.md).
 
+This has the convenient effect of ensuring that the set of entities (and components) that exist are constant within any given stage. always stick around until the end of the current stage. 
+If, for example, you want to target an enemy in one system then attack it in the next, you can guarantee that it won't have been despawned in the mean time.
+When using causal chains of systems like this across stages though, be mindful of the possibility that the entity or component you're pointing to may no longer exist.
+
 When you're creating many of the same archetype of entity at once, it's somewhat more efficient to [spawn them in a batch](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.spawn_batch), allowing Bevy to allocate memory a single time. To do so, you need to create an appropriate iterator:
 
 ```rust```
