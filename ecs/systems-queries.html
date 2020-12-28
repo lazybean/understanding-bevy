@@ -209,6 +209,8 @@ If you carefully avoid doing so unnecessarily, you can prevent your component fr
 <h2><a class="header" href="#working-with-query-objects" id="working-with-query-objects">Working with Query Objects</a></h2>
 <p>Once you have your query, you'll most commonly want to interact with it through iterables:</p>
 <p><code>rust</code></p>
+<p>If you're looking to optimize your code, it may be worth parallelizing the operations you're performing on your queries in particularly heavy systems:</p>
+<p><code>rust</code></p>
 <p>You can fetch components from particular entities using the <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Query.html#method.get"><code>query.get</code></a> family of methods:
 <code>rust</code></p>
 <p>One particularly useful but non-obvious pattern is to work with relationships between entities by storing an <code>Entity</code> on one component, then. Here's an example of how it might work. Be mindful though: the <code>Entity</code> stored in your component can easily end up stale as entities are removed, and you need to be careful that this doesn't cause panics or logic errors. </p>
