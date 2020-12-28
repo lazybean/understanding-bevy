@@ -55,6 +55,10 @@ Once you have your query, you'll most commonly want to interact with it through 
 
 ```rust```
 
+If you're looking to optimize your code, it may be worth parallelizing the operations you're performing on your queries in particularly heavy systems:
+
+```rust```
+
 You can fetch components from particular entities using the [`query.get`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Query.html#method.get) family of methods:
 ```rust```
 
