@@ -1,6 +1,7 @@
 # Resources
 
-[Resources](https://docs.rs/bevy/0.4.0/bevy/ecs/trait.Resource.html) are global singletons, accessed by their type, which can be used to store global state.
+When the data you're looking to store isn't associated with any particular entity, you can stick into a convenient [`Resource`]((https://docs.rs/bevy/0.4.0/bevy/ecs/trait.Resource.html)).
+**Resources** are global singletons, accessed by their type, which can be used to store global state.
 You might want to use resources for storing and configuring settings, handling a complex data structure like a player's inventory that doesn't fit naturally into the ECS model, or tracking game state like the player's score.
 
 You can use virtually any Rust type as a resource, but if possible, you're going to want your resources to be thread-safe: `'static` lifetime and `Send + Sync`.
