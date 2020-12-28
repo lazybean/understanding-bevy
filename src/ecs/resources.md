@@ -25,6 +25,38 @@ Here's how you might add resources of various types for a mock RTS game:
 {{#include resources_code/examples/adding_resources.rs}}
 ```
 
+## Ensuring Unique Resource Types
+
+When any of the resource creation methods is called on a type that already exists (with the caveat that system-local resources are effectively scoped), Bevy will overwrite any existing data. As a result, you only ever want to have one resource of a given type in your app at once.
+
+Here are a few patterns you can use to ensure that your resources have a unique type:
+
+```rust
+{{#include resources_code/examples/unique_resource_types.rs}}
+```
+
+## Using Resources in Your Systems
+
+In order to access resources in a system, wrap the resource type in your function parameters in one of several smart-pointers.
+
+1. [`Res`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Res.html), for when you want read-only access to the underlying data.
+   
+2. [`ResMut`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.ResMut.html), for when you want read and write access to the data.
+   
+3. [`Local`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Local.html), for when you want a system-local resource.
+
+4. ['ChangedRes'](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.ChangedRes.html), for when you only want your system to run when that resource has been changed this tick.
+
+These resource smart pointers all `impl Deref`, ensuring that rather than needing to call `*my_resource` each time, you can usually implicitly skip the dereferencing with `my_resource`. 
+
+When you define a system, you can include resources as one of your function parameter. Bevy's scheduler automatically looks for a  previously added resources with a matching type, and passes in a reference of the appropriate type to your system.
+
+We can see the differences between these different resource types in this simple example:
+
+```rust
+{{#include resources_code/examples/resource_smart_pointers.rs}}
+```
+
 ### Thread-local Resources
 
 If you need a resource that is not thread-safe, you first need to create it with: [`.add_thread_local_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.add_thread_local_resource) or [`.init_thread_local_resource`](https://docs.rs/bevy/0.4.0/bevy/app/struct.AppBuilder.html#method.init_thread_local_resource), whose behavior corresponds to the `add_resource` and `init_resource` methods described above. 
@@ -52,32 +84,8 @@ Local resources are a fairly niche tool: use them if you want to track state tha
 {{#include resources_code/examples/system_local_resources.rs}}
 ```
 
-## Ensuring Unique Resource Types
+### Detecting Changes to Resources
 
-When any of the resource creation methods is called on a type that already exists (with the caveat that system-local resources are effectively scoped), Bevy will overwrite any existing data. As a result, you only ever want to have one resource of a given type in your app at once.
-
-Here are a few patterns you can use to ensure that your resources have a unique type:
-
-```rust
-{{#include resources_code/examples/unique_resource_types.rs}}
-```
-
-## Using Resources in Your Systems
-
-In order to access resources in a system, wrap the resource type in your function parameters in one of the three smart-pointers.
-
-1. [`Res`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Res.html), for when you want read-only access to the underlying data.
-   
-2. [`ResMut`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.ResMut.html), for when you want read and write access to the data.
-   
-3. [`Local`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Local.html), for when you want a system-local resource.
-
-These resource smart pointers all `impl Deref`, ensuring that rather than needing to call `*my_resource` each time, you can usually implicitly skip the dereferencing with `my_resource`. 
-
-When you define a system, you can include resources as one of your function parameter. Bevy's scheduler automatically looks for a  previously added resources with a matching type, and passes in a reference of the appropriate type to your system.
-
-We can see the differences between these different resource types in this simple example:
-
-```rust
-{{#include resources_code/examples/resource_smart_pointers.rs}}
-```
+Much like with components, you can watch for changes to resources with [`ChangedRes`](https://docs.rs/bevy/0.4.0/bevy/ecs/struct.ChangedRes.html).
+Systems with a `ChangedRes` parameter only run when the resource has been changed earlier in the current tick.
+```rust ```
