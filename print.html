@@ -403,6 +403,9 @@ Pass in a tuple of components or a component bundle to <code>commands.spawn</cod
 <p><code>rust </code></p>
 <p>Because entity creation and deletion are wide-reaching operations that involve altering archetypes, they can only be done via <a href="ecs/communication/commands.html"><code>Commands</code></a> or in a thread-local system by modifying <a href="ecs/">World</a>. 
 As a result, they will not take effect until the end of the current <a href="ecs/timing/stages.html">stage</a>.</p>
+<p>This has the convenient effect of ensuring that the set of entities (and components) that exist are constant within any given stage. always stick around until the end of the current stage. 
+If, for example, you want to target an enemy in one system then attack it in the next, you can guarantee that it won't have been despawned in the mean time.
+When using causal chains of systems like this across stages though, be mindful of the possibility that the entity or component you're pointing to may no longer exist.</p>
 <p>When you're creating many of the same archetype of entity at once, it's somewhat more efficient to <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.Commands.html#method.spawn_batch">spawn them in a batch</a>, allowing Bevy to allocate memory a single time. To do so, you need to create an appropriate iterator:</p>
 <p><code>rust</code></p>
 <h2><a class="header" href="#modifying-components-after-creation" id="modifying-components-after-creation">Modifying Components After Creation</a></h2>
@@ -468,6 +471,113 @@ If you carefully avoid doing so unnecessarily, you can prevent your component fr
 <code>rust </code></p>
 <p>Thread-local systems are less performant and harder to reason about than ordinary systems: don't use them unless you have to. 
 If you just want to ensure that your systems run one-by-one in a fixed order, use <a href="https://docs.rs/bevy/0.4.0/bevy/ecs/struct.SystemStage.html#method.serial"><code>SystemStage::serial()</code></a> instead.</p>
+<h3><a class="header" href="#concurrent-systems" id="concurrent-systems">Concurrent Systems</a></h3>
+<p>For some systems, we may be able to pause the work that we're doing, deferring it to a later tick when we have more time or computing resources available.
+By using a <a href="ecs/resources.html">system-local resource</a>, we can keep track of our progress, and break out of the system once we're out of time, rather than stalling the entire game.</p>
+<pre><pre class="playground"><code class="language-rust">use bevy::prelude::*;
+use rand::Rng;
+use std::collections::HashMap;
+use std::fmt;
+
+#[derive(Clone)]
+struct Score(u32);
+
+// These derives let us use Player as a key in our HashMap later
+#[derive(Hash, PartialEq, Eq, Clone, Copy)]
+enum Player {
+	Player1,
+	Player2,
+}
+
+struct Winner(Player);
+
+// The Display trait lets us control how these types are printed
+impl core::fmt::Display for Score {
+	fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {
+		write!(f, &quot;{}&quot;, self.0)
+	}
+}
+
+impl core::fmt::Display for Player {
+	fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {
+		write!(
+			f,
+			&quot;{}&quot;,
+			match &amp;self {
+				Player::Player1 =&gt; &quot;Player 1&quot;,
+				Player::Player2 =&gt; &quot;Player 2&quot;,
+			}
+		)
+	}
+}
+
+impl core::fmt::Display for Winner {
+	fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {
+		write!(f, &quot;{}&quot;, self.0)
+	}
+}
+
+fn main() {
+	App::build()
+		.add_plugins(MinimalPlugins)
+		// Compound types like this are their own type, so can be fetched nicely by our scheduler
+		.init_resource::&lt;HashMap&lt;Player, Score&gt;&gt;()
+		.add_startup_system(initialize_scores.system())
+		// By the completely unfair rules of our game, Player1 wins ties
+		.add_resource(Winner(Player::Player1))
+		.add_system(update_score.system())
+		.add_system(determine_winner.system())
+		.add_system(show_winner.system())
+		.run();
+}
+
+// Rather than trying to specify a starting value at compile time, we can initialize it with its Default value
+// Then we can set it within a system using more complex logic
+fn initialize_scores(mut score_map: ResMut&lt;HashMap&lt;Player, Score&gt;&gt;) {
+	score_map.insert(Player::Player1, Score(0));
+	score_map.insert(Player::Player2, Score(0));
+}
+
+// We're modifying the score_map here, so we need to access them mutably with ResMut
+// Note that we need mut in front of the parameter name as well
+fn update_score(mut score_map: ResMut&lt;HashMap&lt;Player, Score&gt;&gt;) {
+	let mut rng = rand::thread_rng();
+
+	for (_, score) in score_map.iter_mut() {
+		// We need to access the 0th field of our simple tuple struct Score
+		*score = Score(score.0 + rng.gen_range(0..10));
+	}
+}
+
+// We're only reading our score_map, but need to write to our winner parameter
+fn determine_winner(score_map: Res&lt;HashMap&lt;Player, Score&gt;&gt;, mut winner: ResMut&lt;Winner&gt;) {
+	// Notice how Rust automatically derefences score_map here
+	// This works when we're trying to assign a resource or component to a value
+	// Or when we're using a method doesn't exist on our wrapper typ
+	let player_1_score = score_map.get(&amp;Player::Player1).unwrap();
+	let player_2_score = score_map.get(&amp;Player::Player2).unwrap();
+
+	// You can impl std::comp::Ord on your types to overload your comparison operators
+	if player_1_score.0 &gt;= player_2_score.0 {
+		// The automatic dereferencing doesn't work here, because we're trying to assign to, rather than access the value
+		// So Rust can't infer what we want to do
+		*winner = Winner(Player::Player1);
+	} else {
+		*winner = Winner(Player::Player2);
+	}
+}
+
+// Finally, we just need to read the scores and winner to print them
+fn show_winner(score_map: Res&lt;HashMap&lt;Player, Score&gt;&gt;, winner: Res&lt;Winner&gt;) {
+	let player_1_score = score_map.get(&amp;Player::Player1).unwrap();
+	let player_2_score = score_map.get(&amp;Player::Player2).unwrap();
+
+	println!(&quot;Player 1's score: {}&quot;, player_1_score);
+	println!(&quot;Player 2's score: {}&quot;, player_2_score);
+	// We want to print the winner, not the reference to the winner
+	println!(&quot;Right now, {} is the winner!&quot;, *winner);
+}
+</code></pre></pre>
 <h1><a class="header" href="#resources" id="resources">Resources</a></h1>
 <p>When the data you're looking to store isn't associated with any particular entity, you can stick into a convenient <a href="ecs/(https://docs.rs/bevy/0.4.0/bevy/ecs/trait.Resource.html)"><code>Resource</code></a>.
 <strong>Resources</strong> are global singletons, accessed by their type, which can be used to store global state.
